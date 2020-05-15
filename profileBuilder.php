@@ -55,8 +55,7 @@
                                     <input type = "text" id = "mainSearchInput" class = "mainSearch" placeholder = "pesquisa">
                                     <button type = "submit" class = "buttonMainSearch"><i class="fas fa-search"></i></button>    
                                 </form>
-                                <ul class = "listUsers hidden"></ul>
-                                <button type = "button" class = "friendRequest" id = '.$_GET['id'].'><i class="fas fa-user-plus"></i> Solicitar Amizade</button>
+                                <button type = "button" class = "friendRequest" id = '.$_GET['id'].'></button>
                             </header>
                         </section>
             

@@ -119,35 +119,102 @@
             return $stmt->fetchObject();         
         }
 
-        public function friendRequest($myEmail, $friendEmail){
-            $select = "SELECT FRIEND_REQUEST
+        public function verifyFriendRequest($myEmail, $friendEmail){
+            $select = "SELECT USER_EMAIL, FRIEND_EMAIL, FRIEND_REQUEST
             FROM FRIENDS
-            WHERE USER_EMAIL LIKE ? OR FRIEND_EMAIL LIKE ?
-            AND USER_EMAIL LIKE ? OR FRIEND_EMAIL LIKE ?";
+            WHERE USER_EMAIL LIKE ? AND FRIEND_EMAIL LIKE ?
+            OR USER_EMAIL LIKE ? AND FRIEND_EMAIL LIKE ?";
             $stmt = Conexao::getConn()->prepare($select);
             $stmt->bindValue(1, $myEmail);
-            $stmt->bindValue(2, $myEmail);
+            $stmt->bindValue(2, $friendEmail);
             $stmt->bindValue(3, $friendEmail);
-            $stmt->bindValue(4, $friendEmail);
+            $stmt->bindValue(4, $myEmail);
             $stmt->execute();
-           
+
             if($stmt->rowCount() == 0):
+                return 2;
+            else:
+                $result = $stmt->fetchObject();
+                if($result->FRIEND_REQUEST == 1):
+                    if($result->USER_EMAIL == $myEmail):
+                        return 1;
+                    else:
+                        return 0;
+                    endif;
+                else:
+                    return 3;
+                endif;
+            endif;
+
+            
+            
+        }
+
+        public function friendRequest($myEmail, $friendEmail){
+            $stmt = $this->verifyFriendRequest($myEmail, $friendEmail);
+
+            if($stmt == 2):
                 $insert = "INSERT INTO FRIENDS(USER_EMAIL, FRIEND_EMAIL, FRIEND_REQUEST) VALUES(?, ?, ?)";
                 $stmt = Conexao::getConn()->prepare($insert);
                 $stmt->bindValue(1, $myEmail);
                 $stmt->bindValue(2, $friendEmail);
                 $stmt->bindValue(3, 1);
                 $stmt->execute();
-
                 return 2;
             else:
-                $result = $stmt->fetchObject();
-                if($result->FRIEND_REQUEST == 1):
-                    return 1;
-                else:
-                    return 0;
-                endif;
+                return 1;
             endif;
+        }
+
+        public function pushFriendNotification($myEmail){
+            $select = "SELECT U.PROFILE_PHOTO, U.FULL_NAME, F.ID_FRIENDSHIP
+            FROM USERS U
+            INNER JOIN FRIENDS F
+            ON U.EMAIL = F.USER_EMAIL
+            WHERE F.FRIEND_REQUEST = ?
+            AND F.FRIEND_EMAIL LIKE ?";
+
+            $stmt = Conexao::getConn()->prepare($select);
+            $stmt->bindValue(1, 1);
+            $stmt->bindValue(2, $myEmail);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        public function importIdFriendship($myEmail, $friendEmail){
+            $select = "SELECT ID_FRIENDSHIP
+            FROM FRIENDS
+            WHERE USER_EMAIL LIKE ? AND FRIEND_EMAIL LIKE ?
+            OR USER_EMAIL LIKE ? AND FRIEND_EMAIL LIKE ?
+            AND FRIEND_REQUEST = ?";
+            $stmt = Conexao::getConn()->prepare($select);
+            $stmt->bindValue(1, $myEmail);
+            $stmt->bindValue(2, $friendEmail);
+            $stmt->bindValue(3, $friendEmail);
+            $stmt->bindValue(4, $myEmail);
+            $stmt->bindValue(5, 1);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        public function acceptFriend($id_friendship){
+            $update = "UPDATE FRIENDS
+            SET FRIEND_REQUEST = ?
+            WHERE ID_FRIENDSHIP = ?";
+            $stmt = Conexao::getConn()->prepare($update);
+            $stmt->bindValue(1, 0);
+            $stmt->bindValue(2, $id_friendship);
+            if(!$stmt->execute()):
+                return print_r($stmt->errorInfo());
+            endif;
+        }
+
+        public function negFriend($id_friendship){
+            $delete = "DELETE FROM FRIENDS
+            WHERE ID_FRIENDSHIP = ?";
+            $stmt = Conexao::getConn()->prepare($delete);
+            $stmt->bindValue(1, $id_friendship);
+            $stmt->execute();
         }
     }
 ?>

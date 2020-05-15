@@ -130,7 +130,7 @@ body{
     flex-direction: column;
 }
 
-.friendRequest{
+.friendRequest, .acceptFriend{
     width: 30%;
     height: 60px;
     padding: 10px 10px;

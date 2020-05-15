@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    verifyFriend();
+    verifyStatusFriend();
 
     $('#asideToggle').on('click', function(){
         $('.aside').removeClass('hidden');
@@ -18,39 +18,65 @@ $(document).ready(function(){
     })
 
     $('.friendRequest').on('click', function(){
+        if($(this).attr('class') == "friendRequest"){
+            $.ajax({
+                url: 'friendRequest.php',
+                method: 'POST',
+                data:{
+                    id: $('.friendRequest').attr('id')
+                },
+                success: function(response){
+                    if(response == 2){
+                        $('.friendRequest').html('Pedido enviado com sucesso !');
+                    }
+                    else if(response == 1){
+                        $('.friendRequest').html('Sua solicitação de amizade ainda não foi aceita !');
+                    }
+                    else{
+                       $('.friendRequest').remove();
+                    }
+                }
+            })
+        }
+    })
+
+    $(document).on('click', '.acceptFriend', function(){
         $.ajax({
-            url: 'friendRequest.php',
+            url: 'importIdFriendship.php',
             method: 'POST',
             data:{
-                id:this.id
+                id: this.id
             },
             success: function(response){
-                if(response == 2){
-                    $('.friendRequest').html('Pedido enviado com sucesso !');
-                }
-                else if(response == 1){
-                    $('.friendRequest').html('Sua solicitação de amizade ainda não foi aceita !');
-                }
-                else{
-                    $('.friendRequest').remove();
-                }
+                $.ajax({
+                    url: 'decideChangeRequest.php',
+                    method: 'POST',
+                    data:{
+                        accept:1,
+                        id:response
+                    }
+                })
             }
         })
     })
 
-    function verifyFriend(){
+    function verifyStatusFriend(){
         $.ajax({
-            url: 'friendRequest.php',
+            url: 'friendStatusVerify.php',
             method: 'POST',
             data:{
-                id: $('.friendRequest').attr('id')
+                id:$('.friendRequest').attr('id')
             },
             success: function(response){
                 if(response == 2){
-                    $('.friendRequest').html('Pedido enviado com sucesso !');
+                    $('.friendRequest').html('<i class="fas fa-user-plus"></i> Solicitar Amizade');
                 }
                 else if(response == 1){
-                    $('.friendRequest').html('Sua solicitação de amizade ainda não foi aceita !');
+                    $('.friendRequest').html('Solicitação enviada!');
+                }
+                else if(response == 0){
+                    $('.friendRequest').removeClass('friendRequest').addClass('acceptFriend');
+                    $('.acceptFriend').html('<i class="fas fa-user-plus"> Aceitar Solicitação');
                 }
                 else{
                     $('.friendRequest').remove();

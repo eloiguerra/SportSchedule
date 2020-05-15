@@ -58,8 +58,11 @@
 
             <section class = "chatbox">
                 <div class = "iconbox">
-                    <div class = "addFriendNotifications">
+                    <div class = "notifications">
                         <i class="fas fa-user-plus"></i>
+                        <ul class = "listNotifications hidden">
+                            
+                        </ul>
                     </div>
                 </div>
             </section>

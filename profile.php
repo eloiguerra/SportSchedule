@@ -77,7 +77,6 @@
                         <p class = "remainChars">Restam 255 caracteres</p>
                     </div>
                 </form>
-                
             </div>
         </div>
     </body>
